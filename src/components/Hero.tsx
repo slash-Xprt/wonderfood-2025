@@ -1,31 +1,21 @@
 import React from 'react';
 
-const Hero: React.FC = () => {
+export default function Hero() {
   return (
-    <div className="relative pt-16 bg-yellow-400">
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <h1 className="text-4xl font-extrabold tracking-tight text-red-600 sm:text-5xl md:text-6xl">
-            WonderFood
-          </h1>
-          <p className="mt-3 max-w-md mx-auto text-base text-gray-900 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-            Commandez à l'avance et récupérez quand vous voulez
-          </p>
-          <div className="mt-5 max-w-md mx-auto flex justify-center">
-            <div className="rounded-md shadow">
-              <a
-                href="#menu"
-                className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-red-600 hover:bg-red-700 md:py-4 md:text-lg md:px-10"
-              >
-                Commander
-              </a>
-            </div>
-          </div>
-        </div>
+    <div className="relative h-[300px] bg-gray-900">
+      <div className="absolute inset-0">
+        <img
+          src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=2000&q=80"
+          alt="Restaurant background"
+          className="w-full h-full object-cover opacity-60"
+        />
       </div>
-      <div className="absolute bottom-0 w-full h-16 bg-gradient-to-t from-white to-transparent"></div>
+      <div className="relative h-full flex flex-col justify-center items-center text-center text-white px-4">
+        <h1 className="text-4xl md:text-5xl font-bold mb-4">FoodHub</h1>
+        <p className="text-lg md:text-xl max-w-2xl">
+          Une expérience culinaire unique au cœur de la ville
+        </p>
+      </div>
     </div>
   );
-};
-
-export default Hero;
+}
