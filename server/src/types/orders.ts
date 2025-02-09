@@ -1,8 +1,6 @@
-import { MenuItem } from '../data/menu';
+import { Order as PrismaOrder, OrderItem as PrismaOrderItem } from '@prisma/client';
 
-export interface OrderItem extends MenuItem {
-  quantity: number;
-}
+export type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered' | 'cancelled';
 
 export interface CustomerInfo {
   name: string;
@@ -10,11 +8,20 @@ export interface CustomerInfo {
   phone: string;
 }
 
-export interface Order {
-  id: number;
-  items: OrderItem[];
-  total: number;
+export interface OrderItemInput {
+  productId: number;
+  quantity: number;
+  price: number;
+}
+
+export interface CreateOrderInput {
   customerInfo: CustomerInfo;
-  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
-  createdAt: Date;
-} 
+  items: OrderItemInput[];
+  total: number;
+}
+
+export interface OrderWithItems extends PrismaOrder {
+  items: PrismaOrderItem[];
+}
+
+export type { PrismaOrder as Order, PrismaOrderItem }; 

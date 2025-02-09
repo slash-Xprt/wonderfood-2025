@@ -1,11 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { loadStripe } from '@stripe/stripe-js';
+import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
 import { CartItem } from '../types';
 import { CreditCard } from 'lucide-react';
-
-// Initialize Stripe
-const stripePromise = loadStripe('your_publishable_key'); // Replace with your Stripe publishable key
 
 interface CheckoutProps {
   items: CartItem[];
@@ -14,6 +11,9 @@ interface CheckoutProps {
 
 export default function Checkout({ items, onOrderComplete }: CheckoutProps) {
   const navigate = useNavigate();
+  const stripe = useStripe();
+  const elements = useElements();
+  
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -21,24 +21,30 @@ export default function Checkout({ items, onOrderComplete }: CheckoutProps) {
     phone: ''
   });
   const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   const handlePayment = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!stripe || !elements) {
+      return;
+    }
+
     setIsProcessing(true);
+    setError(null);
 
     try {
-      const stripe = await stripePromise;
-      if (!stripe) throw new Error('Stripe failed to initialize');
-
       // Create a payment intent on your server
-      const response = await fetch('/api/create-payment-intent', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/payment/create-intent`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          amount: Math.round(total * 100), // Convert to cents
+          currency: 'eur',
           items,
           customerInfo: formData
         }),
@@ -47,33 +53,31 @@ export default function Checkout({ items, onOrderComplete }: CheckoutProps) {
       const { clientSecret } = await response.json();
 
       // Confirm the payment with Stripe.js
-      const result = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: {
-          card: {
-            // In a real implementation, you would use Stripe Elements
-            // This is just for demonstration
-            number: '4242424242424242',
-            exp_month: 12,
-            exp_year: 2024,
-            cvc: '123',
+      const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(
+        clientSecret,
+        {
+          payment_method: {
+            card: elements.getElement(CardElement)!,
+            billing_details: {
+              name: `${formData.firstName} ${formData.lastName}`,
+              email: formData.email,
+            },
           },
-          billing_details: {
-            name: `${formData.firstName} ${formData.lastName}`,
-            email: formData.email,
-          },
-        },
-      });
+        }
+      );
 
-      if (result.error) {
-        throw new Error(result.error.message);
+      if (stripeError) {
+        setError(stripeError.message || 'An error occurred during payment');
+        return;
       }
 
-      // Payment successful
-      onOrderComplete();
-      navigate('/confirmation');
+      if (paymentIntent.status === 'succeeded') {
+        onOrderComplete();
+        navigate('/confirmation');
+      }
     } catch (error) {
       console.error('Payment failed:', error);
-      alert('Le paiement a échoué. Veuillez réessayer.');
+      setError('Le paiement a échoué. Veuillez réessayer.');
     } finally {
       setIsProcessing(false);
     }
@@ -170,12 +174,42 @@ export default function Checkout({ items, onOrderComplete }: CheckoutProps) {
             </div>
           </div>
 
+          <div className="mt-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Informations de carte
+            </label>
+            <div className="p-3 border rounded-md">
+              <CardElement
+                options={{
+                  style: {
+                    base: {
+                      fontSize: '16px',
+                      color: '#424770',
+                      '::placeholder': {
+                        color: '#aab7c4',
+                      },
+                    },
+                    invalid: {
+                      color: '#9e2146',
+                    },
+                  },
+                }}
+              />
+            </div>
+          </div>
+
+          {error && (
+            <div className="mt-4 text-red-600 text-sm">
+              {error}
+            </div>
+          )}
+
           <div className="mt-8">
             <button
               type="submit"
-              disabled={isProcessing}
+              disabled={!stripe || isProcessing}
               className={`w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 transition-colors ${
-                isProcessing ? 'opacity-75 cursor-not-allowed' : ''
+                (!stripe || isProcessing) ? 'opacity-75 cursor-not-allowed' : ''
               }`}
             >
               <CreditCard className="h-5 w-5" />

@@ -1,8 +1,8 @@
 import React from 'react';
 import Hero from '../components/Hero';
 import MenuSection from '../components/MenuSection';
-import { useCart } from '../context/CartContext';
-import { MenuItem } from '../types';
+import { useCart } from '../hooks/useCart';
+import { MenuItem } from '../types/menu';
 
 export default function HomePage() {
   const { addToCart } = useCart();

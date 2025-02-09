@@ -8,7 +8,7 @@ import { resolve } from 'path';
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 5503,
+    port: 3000,
     strictPort: true,
     open: true,
   },
@@ -18,6 +18,7 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
+    include: ['@stripe/stripe-js', '@stripe/react-stripe-js'],
     exclude: ['lucide-react'],
   },
   build: {
@@ -29,6 +30,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
+          stripe: ['@stripe/stripe-js', '@stripe/react-stripe-js'],
         },
       },
     },

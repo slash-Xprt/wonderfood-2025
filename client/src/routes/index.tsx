@@ -4,6 +4,7 @@ import HomePage from '../pages/HomePage';
 import CheckoutPage from '../pages/CheckoutPage';
 import AdminPage from '../pages/AdminPage';
 import ProductsPage from '../pages/ProductsPage';
+import OrdersPage from '../pages/OrdersPage';
 import ConfirmationPage from '../pages/ConfirmationPage';
 import ErrorPage from '../pages/ErrorPage';
 
@@ -28,6 +29,10 @@ export const router = createBrowserRouter([
       {
         path: 'admin',
         element: <AdminPage />,
+      },
+      {
+        path: 'admin/orders',
+        element: <OrdersPage />,
       },
       {
         path: 'admin/products',
