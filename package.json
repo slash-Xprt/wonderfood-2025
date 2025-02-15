@@ -7,11 +7,16 @@
     "server": "cd server && npm run dev",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "install:all": "npm install && cd client && npm install && cd ../server && npm install",
-    "build": "cd client && npm run build && cd ../server && npm run build"
+    "build": "npm run build:client && npm run build:server && npm run build:functions",
+    "build:client": "cd client && npm run build",
+    "build:server": "cd server && npm run build",
+    "build:functions": "mkdir -p netlify/functions && cp -r server/dist/* netlify/functions/",
+    "deploy": "netlify deploy --prod"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
-    "prisma": "^6.3.1"
+    "prisma": "^6.3.1",
+    "netlify-cli": "^17.38.1"
   },
   "dependencies": {
     "@prisma/client": "^6.3.1",
